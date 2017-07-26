@@ -94,7 +94,6 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 gps = new GlobalPositioningSystem(locationManager);
                 gpsOn();
-
             }
         }).run();
     }
@@ -113,7 +112,6 @@ public class MainActivity extends AppCompatActivity {
                 gpsOff();
             }
         });
-
     }
 
     private void gpsOn(){
@@ -134,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             getHandler().removeCallbacks(getLocationUpdate);
             nmeaTextView.setText("GPS Off");
-
+            // http://www.instructables.com/id/Turn-on-GPS-Programmatically-in-Android-44-or-High/
 //            Intent intent = new Intent("android.location.GPS_ENABLED_CHANGE");
 //            intent.putExtra("enabled", false);
 //            sendBroadcast(intent);

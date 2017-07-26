@@ -62,7 +62,6 @@ public class GlobalPositioningSystem {
                 @Override
                 public void onNmeaReceived(long timestamp, String nmea) {
                     Log.d(TAG, "onNmeaReceived() " + nmea);
-
                 }
             });
 
@@ -87,5 +86,9 @@ public class GlobalPositioningSystem {
 
     public double getLongitude() {
         return longitude;
+    }
+
+    public LocationListener getLocationListener() {
+        return locationListener;
     }
 }
