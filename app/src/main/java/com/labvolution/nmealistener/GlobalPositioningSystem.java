@@ -25,8 +25,6 @@ public class GlobalPositioningSystem {
     private LocationManager locationManager;
     private LocationListener locationListener;
 
-
-
     private double latitude;
     private double longitude;
     private double accuracy;
@@ -45,30 +43,33 @@ public class GlobalPositioningSystem {
     public GlobalPositioningSystem(LocationManager locationManager) {
         Log.d(TAG, "GlobalPositioningSystem() Constructor");
         this.locationManager = locationManager;
+    }
 
-        locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                Log.d(TAG, "onLocationChanged()");
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-                Log.d(TAG, "onStatusChanged()");
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-                Log.d(TAG, "onProviderEnabled()");
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-                Log.d(TAG, "onProviderDisabled()");
-            }
-        };
-
+    public void registerGpsListeners() {
+        Log.d(TAG, "registerGpsListeners()");
         try {
+            locationListener = new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    Log.d(TAG, "onLocationChanged()");
+                }
+
+                @Override
+                public void onStatusChanged(String provider, int status, Bundle extras) {
+                    Log.d(TAG, "onStatusChanged()");
+                }
+
+                @Override
+                public void onProviderEnabled(String provider) {
+                    Log.d(TAG, "onProviderEnabled()");
+                }
+
+                @Override
+                public void onProviderDisabled(String provider) {
+                    Log.d(TAG, "onProviderDisabled()");
+                }
+            };
+
             locationManager.addNmeaListener(new GpsStatus.NmeaListener() {
                 @Override
                 public void onNmeaReceived(long timestamp, String nmea) {

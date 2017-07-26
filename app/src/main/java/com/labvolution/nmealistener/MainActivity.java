@@ -1,14 +1,8 @@
 package com.labvolution.nmealistener;
 
 import android.content.Context;
-import android.content.Intent;
-import android.location.GpsStatus;
-import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -90,14 +84,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startGpsMonitor() {
-        Log.d(TAG, "startGpsMonitor() called");
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                gps = new GlobalPositioningSystem(locationManager);
-                gpsOn();
-            }
-        }).run();
+        gps = new GlobalPositioningSystem(locationManager);
+        gps.registerGpsListeners();
+        gpsOn();
+//
+//        Log.d(TAG, "startGpsMonitor() called");
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//            }
+//        }).run();
     }
 
     private void createButtonListeners() {
