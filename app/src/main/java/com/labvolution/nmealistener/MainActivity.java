@@ -16,6 +16,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.Locale;
+
 public class MainActivity extends AppCompatActivity {
     private final static String TAG = "NMEA";
 
@@ -144,10 +146,18 @@ public class MainActivity extends AppCompatActivity {
     private void getLocationUpdate() {
         nmeaTextView.setText("");
         nmeaTextView.append("onLocationChanged()");
-        nmeaTextView.append("\nLatitude: " + gps.getLatitude());
-        nmeaTextView.append("\nLongitude: " + gps.getLongitude());
-        nmeaTextView.append("\nAccuracy: " + gps.getAccuracy());
-        nmeaTextView.append("\nAltitude: " + gps.getAltitude());
+        nmeaTextView.append(String.format(Locale.UK, "\nLatitude: %.3f", gps.getLatitude()));
+        nmeaTextView.append(String.format(Locale.UK, "\nLongitude: %.3f", gps.getLongitude()));
+        nmeaTextView.append(String.format(Locale.UK, "\nAccuracy: %s", "not implemented"));
+        nmeaTextView.append(String.format(Locale.UK, "\nAltitude: %.0f", gps.getAltitude()));
+        nmeaTextView.append(String.format(Locale.UK, "\nSatellite count: %d", gps.getSatelliteCount()));
+        nmeaTextView.append(String.format(Locale.UK, "\nFix quality: %s", gps.getGpsFixQuality()));
+        nmeaTextView.append(String.format(Locale.UK, "\nFix status: %s", gps.getGpsFixStatus()));
+        nmeaTextView.append(String.format(Locale.UK, "\nHDOP: %.1f", gps.getHdop()));
+        nmeaTextView.append(String.format(Locale.UK, "\nPDOP: %.1f", gps.getPdop()));
+        nmeaTextView.append(String.format(Locale.UK, "\nVDOP: %.1f", gps.getVdop()));
+        nmeaTextView.append(String.format(Locale.UK, "\nGPS time: %s", gps.getGpsTime()));
+        nmeaTextView.append(String.format(Locale.UK, "\nGPS date: %s", gps.getGpsDate()));
         getHandler().postDelayed(getLocationUpdate, 2000);
     }
 
