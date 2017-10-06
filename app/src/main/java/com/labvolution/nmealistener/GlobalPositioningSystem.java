@@ -10,6 +10,7 @@ import android.util.Log;
 import net.sf.marineapi.nmea.parser.SentenceFactory;
 import net.sf.marineapi.nmea.sentence.GGASentence;
 import net.sf.marineapi.nmea.sentence.GSASentence;
+import net.sf.marineapi.nmea.sentence.GSVSentence;
 import net.sf.marineapi.nmea.sentence.RMCSentence;
 import net.sf.marineapi.nmea.sentence.Sentence;
 import net.sf.marineapi.nmea.util.GpsFixQuality;
@@ -74,11 +75,28 @@ public class GlobalPositioningSystem {
                 @Override
                 public void onNmeaReceived(long timestamp, String nmea) {
                     validString = parseNmeaString(nmea);
-                    Log.d("RAW", "onNmeaReceived() " + nmea + " parsed " + validString);
+                    Log.d(TAG, "onNmeaReceived() " + nmea + " parsed " + validString);
                 }
             });
 
-            this.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+            locationManager.addGpsStatusListener(event -> {
+                switch (event){
+                    case GpsStatus.GPS_EVENT_STARTED:
+                        Log.d(TAG, "GPS_EVENT_STARTED");
+                        break;
+                    case GpsStatus.GPS_EVENT_STOPPED:
+                        Log.d(TAG, "GPS_EVENT_STOPPED");
+                        break;
+                    case GpsStatus.GPS_EVENT_FIRST_FIX:
+                        Log.d(TAG, "GPS_EVENT_FIRST_FIX");
+                        break;
+                    case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
+                        Log.d(TAG, "GPS_EVENT_SATELLITE_STATUS");
+                        break;
+                }
+            });
+
+            this.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, locationListener);
 
         } catch (SecurityException ex) {
             Log.e(TAG, "NMEA Listener error: " + ex.getStackTrace());
@@ -88,48 +106,52 @@ public class GlobalPositioningSystem {
     private boolean parseNmeaString(String nmea) {
         try {
             Sentence sentence = SentenceFactory.getInstance().createParser(nmea.trim());
-            switch (sentence.getSentenceId()) {
-                case "GGA":
-                    latitude = ((GGASentence)sentence).getPosition().getLatitude();
-                    longitude = ((GGASentence)sentence).getPosition().getLongitude();
-                    altitude = ((GGASentence)sentence).getPosition().getAltitude();
-                    satelliteCount = ((GGASentence)sentence).getSatelliteCount();
-                    gpsFixQuality = ((GGASentence)sentence).getFixQuality();
+            if (sentence.isValid()) {
+                switch (sentence.getSentenceId()) {
+                    case "GGA":
+                        latitude = ((GGASentence) sentence).getPosition().getLatitude();
+                        longitude = ((GGASentence) sentence).getPosition().getLongitude();
+                        altitude = ((GGASentence) sentence).getPosition().getAltitude();
+                        satelliteCount = ((GGASentence) sentence).getSatelliteCount();
+                        gpsFixQuality = ((GGASentence) sentence).getFixQuality();
 
-                    Log.d(TAG, "GPS fix quality: " + getGpsFixQuality().toString());
-                    Log.d(TAG, "Satellite count: " + Integer.toString(getSatelliteCount()));
-                    Log.d(TAG, "Altitude: " + Double.toString(getAltitude()));
-                    Log.d(TAG, "Latitude: " + (Double.toString(getLatitude())));
-                    Log.d(TAG, "Longitude: " + (Double.toString(getLongitude())));
-                    validString = true;
-                    break;
-                case "GSA":
-                    hdop = ((GSASentence) sentence).getHorizontalDOP();
-                    vdop = ((GSASentence) sentence).getVerticalDOP();
-                    pdop = ((GSASentence) sentence).getPositionDOP();
-                    gpsFixStatus = ((GSASentence) sentence).getFixStatus();
+                        Log.d(TAG, "GPS fix quality: " + getGpsFixQuality().toString());
+                        Log.d(TAG, "Satellite count: " + Integer.toString(getSatelliteCount()));
+                        Log.d(TAG, "Altitude: " + Double.toString(getAltitude()));
+                        Log.d(TAG, "Latitude: " + (Double.toString(getLatitude())));
+                        Log.d(TAG, "Longitude: " + (Double.toString(getLongitude())));
+                        validString = true;
+                        break;
+                    case "GSA":
+                        hdop = ((GSASentence) sentence).getHorizontalDOP();
+                        vdop = ((GSASentence) sentence).getVerticalDOP();
+                        pdop = ((GSASentence) sentence).getPositionDOP();
+                        gpsFixStatus = ((GSASentence) sentence).getFixStatus();
 
-                    Log.d(TAG, "PDOP: " + Double.toString(getPdop()));
-                    Log.d(TAG, "VDOP: " + Double.toString(getVdop()));
-                    Log.d(TAG, "HDOP: " + Double.toString(getHdop()));
-                    Log.d(TAG, "Fix type: " + getGpsFixStatus().toString());
-                    validString = true;
-                    break;
-                case "GSV":
-                    break;
-                case "RMC":
-                    gpsTime = ((RMCSentence)sentence).getTime().toISO8601();
-                    gpsDate = ((RMCSentence)sentence).getDate().toISO8601();
+                        Log.d(TAG, "PDOP: " + Double.toString(getPdop()));
+                        Log.d(TAG, "VDOP: " + Double.toString(getVdop()));
+                        Log.d(TAG, "HDOP: " + Double.toString(getHdop()));
+                        Log.d(TAG, "Fix type: " + getGpsFixStatus().toString());
+                        validString = true;
+                        break;
+                    case "GSV":
+                        Log.d(TAG, "GSV Satellite Count: " + ((GSVSentence) sentence).getSatelliteCount());
+                        validString = true;
+                        break;
+                    case "RMC":
+                        gpsTime = ((RMCSentence) sentence).getTime().toISO8601();
+                        gpsDate = ((RMCSentence) sentence).getDate().toISO8601();
 
-                    Log.d(TAG, "RMC Time: " + getGpsTime());
-                    Log.d(TAG, "RMC Date: " + getGpsDate());
-                    validString = true;
-                    break;
-                case "VTG":
-                    validString = true;
-                    break;
-                default:
-                    break;
+                        Log.d(TAG, "RMC Time: " + getGpsTime());
+                        Log.d(TAG, "RMC Date: " + getGpsDate());
+                        validString = true;
+                        break;
+                    case "VTG":
+                        validString = true;
+                        break;
+                    default:
+                        break;
+                }
             }
         } catch (IllegalArgumentException ex) {
             validString = false;

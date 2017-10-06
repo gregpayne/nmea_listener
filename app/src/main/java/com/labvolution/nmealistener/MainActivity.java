@@ -6,6 +6,8 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -36,6 +38,10 @@ public class MainActivity extends AppCompatActivity {
         gpsOffButton = (Button)findViewById(R.id.gpsOffButton);
         nmeaTextView.setText("");
         locationManager = (LocationManager) MainActivity.this.getSystemService(Context.LOCATION_SERVICE);
+
+        for(String provider : locationManager.getAllProviders()) {
+            Log.d(TAG, "LocationManager providers: " + provider.toString());
+        }
 
         startGpsMonitor();
         createButtonListeners();
@@ -83,6 +89,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
     private void startGpsMonitor() {
         gps = new GlobalPositioningSystem(locationManager);
         gps.registerGpsListeners();
@@ -117,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "gpsOn()");
         try {
             getHandler().post(getLocationUpdate);
-
+            Log.d(TAG, "isProviderEnabled(): " + Boolean.toString(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)));
 //            Intent intent = new Intent("android.location.GPS_ENABLED_CHANGE");
 //            intent.putExtra("enabled", true);
 //            sendBroadcast(intent);
@@ -131,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             getHandler().removeCallbacks(getLocationUpdate);
             nmeaTextView.setText("GPS Off");
+            Log.d(TAG, "isProviderEnabled(): " + Boolean.toString(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)));
             // http://www.instructables.com/id/Turn-on-GPS-Programmatically-in-Android-44-or-High/
 //            Intent intent = new Intent("android.location.GPS_ENABLED_CHANGE");
 //            intent.putExtra("enabled", false);
