@@ -10,8 +10,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -27,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
 
     private final Runnable getLocationUpdate = this::getLocationUpdate;
 
+    private ArrayList<ImageView> gpsIcons = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +41,20 @@ public class MainActivity extends AppCompatActivity {
         gpsOnButton = (Button)findViewById(R.id.gpsOnButton);
         gpsOffButton = (Button)findViewById(R.id.gpsOffButton);
         nmeaTextView.setText("");
+
+        gpsIcons.add((ImageView) findViewById(R.id.gps0));
+        gpsIcons.add((ImageView) findViewById(R.id.gps1));
+        gpsIcons.add((ImageView) findViewById(R.id.gps2));
+        gpsIcons.add((ImageView) findViewById(R.id.gps3));
+        gpsIcons.add((ImageView) findViewById(R.id.gps4));
+        gpsIcons.add((ImageView) findViewById(R.id.gps5));
+        gpsIcons.add((ImageView) findViewById(R.id.gps6));
+        gpsIcons.add((ImageView) findViewById(R.id.gps7));
+        gpsIcons.add((ImageView) findViewById(R.id.gps8));
+        gpsIcons.add((ImageView) findViewById(R.id.gps9));
+        gpsIcons.add((ImageView) findViewById(R.id.gps10));
+        gpsIcons.add((ImageView) findViewById(R.id.gps10More));
+
         locationManager = (LocationManager) MainActivity.this.getSystemService(Context.LOCATION_SERVICE);
 
         for(String provider : locationManager.getAllProviders()) {
@@ -144,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             getHandler().removeCallbacks(getLocationUpdate);
             nmeaTextView.setText("GPS Off");
+            for (ImageView i : gpsIcons) { i.setVisibility(View.GONE); }
             Log.d(TAG, "isProviderEnabled(): " + Boolean.toString(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)));
             // http://www.instructables.com/id/Turn-on-GPS-Programmatically-in-Android-44-or-High/
 //            Intent intent = new Intent("android.location.GPS_ENABLED_CHANGE");
@@ -154,14 +173,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    int previousSatelliteCount = -1;
+    int currentSatelliteCount;
+
     private void getLocationUpdate() {
+        currentSatelliteCount = gps.getSatelliteCount();
+
         nmeaTextView.setText("");
         nmeaTextView.append("onLocationChanged()");
         nmeaTextView.append(String.format(Locale.UK, "\nLatitude: %.3f", gps.getLatitude()));
         nmeaTextView.append(String.format(Locale.UK, "\nLongitude: %.3f", gps.getLongitude()));
         nmeaTextView.append(String.format(Locale.UK, "\nAccuracy: %s", "not implemented"));
         nmeaTextView.append(String.format(Locale.UK, "\nAltitude: %.0f", gps.getAltitude()));
-        nmeaTextView.append(String.format(Locale.UK, "\nSatellite count: %d", gps.getSatelliteCount()));
+        nmeaTextView.append(String.format(Locale.UK, "\nSatellite count: %d", currentSatelliteCount));
         nmeaTextView.append(String.format(Locale.UK, "\nFix quality: %s", gps.getGpsFixQuality()));
         nmeaTextView.append(String.format(Locale.UK, "\nFix status: %s", gps.getGpsFixStatus()));
         nmeaTextView.append(String.format(Locale.UK, "\nHDOP: %.1f", gps.getHdop()));
@@ -169,6 +193,19 @@ public class MainActivity extends AppCompatActivity {
         nmeaTextView.append(String.format(Locale.UK, "\nVDOP: %.1f", gps.getVdop()));
         nmeaTextView.append(String.format(Locale.UK, "\nGPS time: %s", gps.getGpsTime()));
         nmeaTextView.append(String.format(Locale.UK, "\nGPS date: %s", gps.getGpsDate()));
+
+        if (previousSatelliteCount != currentSatelliteCount) {
+            previousSatelliteCount = currentSatelliteCount;
+            // Hide all GPS icons
+            for (ImageView i : gpsIcons) { i.setVisibility(View.GONE); }
+            switch (currentSatelliteCount) {
+                case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9: case 10:
+                    gpsIcons.get(currentSatelliteCount).setVisibility(View.VISIBLE);
+                    break;
+                default:
+                    gpsIcons.get(11).setVisibility(View.VISIBLE); // > 10 satellites
+            }
+        }
         getHandler().postDelayed(getLocationUpdate, 2000);
     }
 
