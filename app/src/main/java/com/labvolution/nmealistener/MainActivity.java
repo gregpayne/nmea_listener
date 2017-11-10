@@ -149,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             getHandler().post(getLocationUpdate);
             Log.d(TAG, "isProviderEnabled(): " + Boolean.toString(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)));
+            // FIXME: 10/11/2017 Find way to turn GPS on programmatically
 //            Intent intent = new Intent("android.location.GPS_ENABLED_CHANGE");
 //            intent.putExtra("enabled", true);
 //            sendBroadcast(intent);
@@ -164,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
             nmeaTextView.setText("GPS Off");
             for (ImageView i : gpsIcons) { i.setVisibility(View.GONE); }
             Log.d(TAG, "isProviderEnabled(): " + Boolean.toString(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)));
+            // FIXME: 10/11/2017 Find way to turn GPS off programmatically
             // http://www.instructables.com/id/Turn-on-GPS-Programmatically-in-Android-44-or-High/
 //            Intent intent = new Intent("android.location.GPS_ENABLED_CHANGE");
 //            intent.putExtra("enabled", false);
