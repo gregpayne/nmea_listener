@@ -63,48 +63,6 @@ public class MainActivity extends AppCompatActivity {
 
         startGpsMonitor();
         createButtonListeners();
-
-//
-//
-//        locationListener = new LocationListener() {
-//            @Override
-//            public void onLocationChanged(Location location) {
-//                Log.e(TAG, "onLocationChanged()");
-//            }
-//
-//            @Override
-//            public void onStatusChanged(String provider, int status, Bundle extras) {
-//                Log.e(TAG, "onStatusChanged()");
-//            }
-//
-//            @Override
-//            public void onProviderEnabled(String provider) {
-//                Log.e(TAG, "onProviderEnabled()");
-//            }
-//
-//            @Override
-//            public void onProviderDisabled(String provider) {
-//                Log.e(TAG, "onProviderDisabled()");
-//            }
-//        };
-//
-//        Log.d(TAG, "LocationListener created");
-//
-//        try {
-//            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-//            Log.d(TAG, "LocationListener started");
-//
-//            locationManager.addNmeaListener(new GpsStatus.NmeaListener() {
-//                @Override
-//                public void onNmeaReceived(long timestamp, String nmea) {
-//                    Log.e(TAG, "onNmeaReceived()");
-//                    nmeaTextView.setText(nmea);
-//                }
-//            });
-//        } catch (SecurityException ex) {
-//            Log.e(TAG, ex.getStackTrace().toString());
-//        }
-
     }
 
     @Override
@@ -118,14 +76,6 @@ public class MainActivity extends AppCompatActivity {
         gps = new GlobalPositioningSystem(locationManager);
         gps.registerGpsListeners();
         gpsOn();
-//
-//        Log.d(TAG, "startGpsMonitor() called");
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//
-//            }
-//        }).run();
     }
 
     private void createButtonListeners() {
