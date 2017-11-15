@@ -29,6 +29,7 @@ public class GlobalPositioningSystem {
     private double latitude;
     private double longitude;
     private double accuracy;
+    private double calculatedAccuracy;
     private double altitude;
     private int satelliteCount;
     private GpsFixQuality gpsFixQuality;
@@ -128,6 +129,7 @@ public class GlobalPositioningSystem {
                         vdop = ((GSASentence) sentence).getVerticalDOP();
                         pdop = ((GSASentence) sentence).getPositionDOP();
                         gpsFixStatus = ((GSASentence) sentence).getFixStatus();
+                        calculatedAccuracy = calculateAccuracy(hdop, vdop, pdop);
 
                         Log.d(TAG, "PDOP: " + Double.toString(getPdop()));
                         Log.d(TAG, "VDOP: " + Double.toString(getVdop()));
@@ -164,6 +166,10 @@ public class GlobalPositioningSystem {
         return validString;
     }
 
+    private double calculateAccuracy(double hdop, double vdop, double pdop) {
+        return 0;
+    }
+
     public String getGpsDate() {
         return gpsDate;
     }
@@ -198,6 +204,10 @@ public class GlobalPositioningSystem {
 
     public double getAccuracy() {
         return accuracy;
+    }
+
+    public double getCalculatedAccuracy() {
+        return calculatedAccuracy;
     }
 
     public double getAltitude() {
