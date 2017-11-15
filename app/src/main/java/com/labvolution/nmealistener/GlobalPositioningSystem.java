@@ -53,6 +53,7 @@ public class GlobalPositioningSystem {
                 @Override
                 public void onLocationChanged(Location location) {
                     Log.d(TAG, "onLocationChanged()");
+                    accuracy = location.getAccuracy();
                 }
 
                 @Override

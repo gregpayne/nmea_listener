@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
         nmeaTextView.append("onLocationChanged()");
         nmeaTextView.append(String.format(Locale.UK, "\nLatitude: %.3f", gps.getLatitude()));
         nmeaTextView.append(String.format(Locale.UK, "\nLongitude: %.3f", gps.getLongitude()));
-        nmeaTextView.append(String.format(Locale.UK, "\nAccuracy: %s", "not implemented"));
+        nmeaTextView.append(String.format(Locale.UK, "\nAccuracy: %s", gps.getAccuracy()));
         nmeaTextView.append(String.format(Locale.UK, "\nAltitude: %.0f", gps.getAltitude()));
         nmeaTextView.append(String.format(Locale.UK, "\nSatellite count: %d", currentSatelliteCount));
         nmeaTextView.append(String.format(Locale.UK, "\nFix quality: %s", gps.getGpsFixQuality()));
