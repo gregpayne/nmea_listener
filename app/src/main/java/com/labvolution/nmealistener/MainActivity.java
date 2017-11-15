@@ -31,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayList<ImageView> gpsIcons = new ArrayList<>();
 
+    int previousSatelliteCount = -1;
+    int currentSatelliteCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "gpsOn()");
         try {
             getHandler().post(getLocationUpdate);
+            previousSatelliteCount = -1;
             Log.d(TAG, "isProviderEnabled(): " + Boolean.toString(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)));
             // FIXME: 10/11/2017 Find way to turn GPS on programmatically
 //            Intent intent = new Intent("android.location.GPS_ENABLED_CHANGE");
@@ -124,9 +127,6 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "Error in gpsOff(): " + ex.getStackTrace());
         }
     }
-
-    int previousSatelliteCount = -1;
-    int currentSatelliteCount;
 
     private void getLocationUpdate() {
         currentSatelliteCount = gps.getSatelliteCount();
