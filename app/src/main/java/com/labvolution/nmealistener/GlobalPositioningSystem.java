@@ -7,6 +7,8 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.labvolution.nmealistener.tools.Signal1;
+
 import net.sf.marineapi.nmea.parser.SentenceFactory;
 import net.sf.marineapi.nmea.sentence.GGASentence;
 import net.sf.marineapi.nmea.sentence.GSASentence;
@@ -29,6 +31,7 @@ public class GlobalPositioningSystem {
     private double latitude;
     private double longitude;
     private double accuracy;
+    private double calculatedAccuracy;
     private double altitude;
     private int satelliteCount;
     private GpsFixQuality gpsFixQuality;
@@ -40,6 +43,9 @@ public class GlobalPositioningSystem {
     private String gpsDate;
 
     private boolean validString;
+
+    public enum GpsStateEvent { PROVIDER_ENABLED, PROVIDER_DISABLED }
+    public final Signal1<GpsStateEvent> gpsStateEvent = new Signal1<>();
 
     public GlobalPositioningSystem(LocationManager locationManager) {
         Log.d(TAG, "GlobalPositioningSystem() Constructor");
@@ -53,6 +59,7 @@ public class GlobalPositioningSystem {
                 @Override
                 public void onLocationChanged(Location location) {
                     Log.d(TAG, "onLocationChanged()");
+                    accuracy = location.getAccuracy();
                 }
 
                 @Override
@@ -63,20 +70,19 @@ public class GlobalPositioningSystem {
                 @Override
                 public void onProviderEnabled(String provider) {
                     Log.d(TAG, "onProviderEnabled()");
+                    gpsStateEvent.fire(GpsStateEvent.PROVIDER_ENABLED);
                 }
 
                 @Override
                 public void onProviderDisabled(String provider) {
                     Log.d(TAG, "onProviderDisabled()");
+                    gpsStateEvent.fire(GpsStateEvent.PROVIDER_DISABLED);
                 }
             };
 
-            locationManager.addNmeaListener(new GpsStatus.NmeaListener() {
-                @Override
-                public void onNmeaReceived(long timestamp, String nmea) {
-                    validString = parseNmeaString(nmea);
-                    Log.d(TAG, "onNmeaReceived() " + nmea + " parsed " + validString);
-                }
+            locationManager.addNmeaListener((long timestamp, String nmea) -> {
+                validString = parseNmeaString(nmea);
+                Log.d(TAG, "onNmeaReceived() " + nmea + " parsed " + validString);
             });
 
             locationManager.addGpsStatusListener(event -> {
@@ -127,6 +133,7 @@ public class GlobalPositioningSystem {
                         vdop = ((GSASentence) sentence).getVerticalDOP();
                         pdop = ((GSASentence) sentence).getPositionDOP();
                         gpsFixStatus = ((GSASentence) sentence).getFixStatus();
+                        calculatedAccuracy = calculateAccuracy(hdop, vdop, pdop);
 
                         Log.d(TAG, "PDOP: " + Double.toString(getPdop()));
                         Log.d(TAG, "VDOP: " + Double.toString(getVdop()));
@@ -163,6 +170,10 @@ public class GlobalPositioningSystem {
         return validString;
     }
 
+    private double calculateAccuracy(double hdop, double vdop, double pdop) {
+        return 0;
+    }
+
     public String getGpsDate() {
         return gpsDate;
     }
@@ -197,6 +208,10 @@ public class GlobalPositioningSystem {
 
     public double getAccuracy() {
         return accuracy;
+    }
+
+    public double getCalculatedAccuracy() {
+        return calculatedAccuracy;
     }
 
     public double getAltitude() {

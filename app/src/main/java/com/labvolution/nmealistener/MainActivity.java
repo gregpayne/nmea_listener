@@ -1,8 +1,10 @@
 package com.labvolution.nmealistener;
 
 import android.content.Context;
+import android.content.Intent;
 import android.location.LocationManager;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,6 +33,10 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayList<ImageView> gpsIcons = new ArrayList<>();
 
+    private Object gpsCallbackSlot;
+
+    int previousSatelliteCount = -1;
+    int currentSatelliteCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,34 +81,42 @@ public class MainActivity extends AppCompatActivity {
     private void startGpsMonitor() {
         gps = new GlobalPositioningSystem(locationManager);
         gps.registerGpsListeners();
-        gpsOn();
+        if (gpsSettingsState()) {
+            getHandler().post(getLocationUpdate);
+            previousSatelliteCount = -1;
+        } else {
+            gpsOn();
+        }
     }
 
     private void createButtonListeners() {
-        gpsOnButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                gpsOn();
-            }
+        gpsOnButton.setOnClickListener(view -> {
+            gpsOn();
         });
 
-        gpsOffButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                gpsOff();
-            }
+        gpsOffButton.setOnClickListener(view -> {
+            gpsOff();
         });
     }
 
     private void gpsOn(){
         Log.d(TAG, "gpsOn()");
         try {
-            getHandler().post(getLocationUpdate);
-            Log.d(TAG, "isProviderEnabled(): " + Boolean.toString(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)));
-            // FIXME: 10/11/2017 Find way to turn GPS on programmatically
-//            Intent intent = new Intent("android.location.GPS_ENABLED_CHANGE");
-//            intent.putExtra("enabled", true);
-//            sendBroadcast(intent);
+            if (gpsSettingsState()) { return; }
+
+            gpsCallbackSlot = gps.gpsStateEvent.connect(e -> {
+                switch (e) {
+                    case PROVIDER_ENABLED:
+                        getHandler().post(getLocationUpdate);
+                        previousSatelliteCount = -1;
+                        gps.gpsStateEvent.disconnect(gpsCallbackSlot);
+                        break;
+                    default:
+                        break;
+                }
+            });
+            // XXX: https://stackoverflow.com/a/29232367
+            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
         } catch (Exception ex) {
             Log.e(TAG, "Error in gpsOn(): " + ex.getStackTrace());
         }
@@ -111,22 +125,30 @@ public class MainActivity extends AppCompatActivity {
     private void gpsOff() {
         Log.d(TAG, "gpsOff()");
         try {
-            getHandler().removeCallbacks(getLocationUpdate);
-            nmeaTextView.setText("GPS Off");
-            for (ImageView i : gpsIcons) { i.setVisibility(View.GONE); }
-            Log.d(TAG, "isProviderEnabled(): " + Boolean.toString(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)));
-            // FIXME: 10/11/2017 Find way to turn GPS off programmatically
-            // http://www.instructables.com/id/Turn-on-GPS-Programmatically-in-Android-44-or-High/
-//            Intent intent = new Intent("android.location.GPS_ENABLED_CHANGE");
-//            intent.putExtra("enabled", false);
-//            sendBroadcast(intent);
+            if (!gpsSettingsState()) { return; }
+
+            gpsCallbackSlot = gps.gpsStateEvent.connect(e -> {
+                switch (e) {
+                    case PROVIDER_DISABLED:
+                        getHandler().removeCallbacks(getLocationUpdate);
+                        nmeaTextView.setText("GPS Off");
+                        for (ImageView i : gpsIcons) { i.setVisibility(View.GONE); }
+                        gps.gpsStateEvent.disconnect(gpsCallbackSlot);
+                        break;
+                    default:
+                        break;
+                }
+            });
+            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
         } catch (Exception ex) {
             Log.e(TAG, "Error in gpsOff(): " + ex.getStackTrace());
         }
     }
 
-    int previousSatelliteCount = -1;
-    int currentSatelliteCount;
+    private boolean gpsSettingsState() {
+        Log.d(TAG, "isProviderEnabled(): " + Boolean.toString(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)));
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
 
     private void getLocationUpdate() {
         currentSatelliteCount = gps.getSatelliteCount();
@@ -135,7 +157,8 @@ public class MainActivity extends AppCompatActivity {
         nmeaTextView.append("onLocationChanged()");
         nmeaTextView.append(String.format(Locale.UK, "\nLatitude: %.3f", gps.getLatitude()));
         nmeaTextView.append(String.format(Locale.UK, "\nLongitude: %.3f", gps.getLongitude()));
-        nmeaTextView.append(String.format(Locale.UK, "\nAccuracy: %s", "not implemented"));
+        nmeaTextView.append(String.format(Locale.UK, "\nAccuracy: %s", gps.getAccuracy()));
+        nmeaTextView.append(String.format(Locale.UK, "\nCalculated Accuracy: %s", gps.getCalculatedAccuracy()));
         nmeaTextView.append(String.format(Locale.UK, "\nAltitude: %.0f", gps.getAltitude()));
         nmeaTextView.append(String.format(Locale.UK, "\nSatellite count: %d", currentSatelliteCount));
         nmeaTextView.append(String.format(Locale.UK, "\nFix quality: %s", gps.getGpsFixQuality()));
