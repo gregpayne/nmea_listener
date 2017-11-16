@@ -1,8 +1,10 @@
 package com.labvolution.nmealistener;
 
 import android.content.Context;
+import android.content.Intent;
 import android.location.LocationManager;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -99,13 +101,11 @@ public class MainActivity extends AppCompatActivity {
     private void gpsOn(){
         Log.d(TAG, "gpsOn()");
         try {
+            // XXX: https://stackoverflow.com/a/29232367
+            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
             getHandler().post(getLocationUpdate);
             previousSatelliteCount = -1;
             Log.d(TAG, "isProviderEnabled(): " + Boolean.toString(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)));
-            // FIXME: 10/11/2017 Find way to turn GPS on programmatically
-//            Intent intent = new Intent("android.location.GPS_ENABLED_CHANGE");
-//            intent.putExtra("enabled", true);
-//            sendBroadcast(intent);
         } catch (Exception ex) {
             Log.e(TAG, "Error in gpsOn(): " + ex.getStackTrace());
         }
@@ -114,15 +114,11 @@ public class MainActivity extends AppCompatActivity {
     private void gpsOff() {
         Log.d(TAG, "gpsOff()");
         try {
+            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
             getHandler().removeCallbacks(getLocationUpdate);
             nmeaTextView.setText("GPS Off");
             for (ImageView i : gpsIcons) { i.setVisibility(View.GONE); }
             Log.d(TAG, "isProviderEnabled(): " + Boolean.toString(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)));
-            // FIXME: 10/11/2017 Find way to turn GPS off programmatically
-            // http://www.instructables.com/id/Turn-on-GPS-Programmatically-in-Android-44-or-High/
-//            Intent intent = new Intent("android.location.GPS_ENABLED_CHANGE");
-//            intent.putExtra("enabled", false);
-//            sendBroadcast(intent);
         } catch (Exception ex) {
             Log.e(TAG, "Error in gpsOff(): " + ex.getStackTrace());
         }
