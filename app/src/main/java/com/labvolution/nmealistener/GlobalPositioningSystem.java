@@ -73,12 +73,9 @@ public class GlobalPositioningSystem {
                 }
             };
 
-            locationManager.addNmeaListener(new GpsStatus.NmeaListener() {
-                @Override
-                public void onNmeaReceived(long timestamp, String nmea) {
-                    validString = parseNmeaString(nmea);
-                    Log.d(TAG, "onNmeaReceived() " + nmea + " parsed " + validString);
-                }
+            locationManager.addNmeaListener((long timestamp, String nmea) -> {
+                validString = parseNmeaString(nmea);
+                Log.d(TAG, "onNmeaReceived() " + nmea + " parsed " + validString);
             });
 
             locationManager.addGpsStatusListener(event -> {
