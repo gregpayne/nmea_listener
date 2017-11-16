@@ -33,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayList<ImageView> gpsIcons = new ArrayList<>();
 
+    private Object gpsCallbackSlot;
+
     int previousSatelliteCount = -1;
     int currentSatelliteCount;
 
@@ -108,10 +110,19 @@ public class MainActivity extends AppCompatActivity {
         try {
             if (gpsSettingsState()) { return; }
 
+            gpsCallbackSlot = gps.gpsStateEvent.connect(e -> {
+                switch (e) {
+                    case PROVIDER_ENABLED:
+                        getHandler().post(getLocationUpdate);
+                        previousSatelliteCount = -1;
+                        gps.gpsStateEvent.disconnect(gpsCallbackSlot);
+                        break;
+                    default:
+                        break;
+                }
+            });
             // XXX: https://stackoverflow.com/a/29232367
             startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-            getHandler().post(getLocationUpdate);
-            previousSatelliteCount = -1;
         } catch (Exception ex) {
             Log.e(TAG, "Error in gpsOn(): " + ex.getStackTrace());
         }
@@ -122,10 +133,19 @@ public class MainActivity extends AppCompatActivity {
         try {
             if (!gpsSettingsState()) { return; }
 
+            gpsCallbackSlot = gps.gpsStateEvent.connect(e -> {
+                switch (e) {
+                    case PROVIDER_DISABLED:
+                        getHandler().removeCallbacks(getLocationUpdate);
+                        nmeaTextView.setText("GPS Off");
+                        for (ImageView i : gpsIcons) { i.setVisibility(View.GONE); }
+                        gps.gpsStateEvent.disconnect(gpsCallbackSlot);
+                        break;
+                    default:
+                        break;
+                }
+            });
             startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-            getHandler().removeCallbacks(getLocationUpdate);
-            nmeaTextView.setText("GPS Off");
-            for (ImageView i : gpsIcons) { i.setVisibility(View.GONE); }
         } catch (Exception ex) {
             Log.e(TAG, "Error in gpsOff(): " + ex.getStackTrace());
         }

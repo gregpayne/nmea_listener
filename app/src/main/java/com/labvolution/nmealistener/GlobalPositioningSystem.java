@@ -7,6 +7,8 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.labvolution.nmealistener.tools.Signal1;
+
 import net.sf.marineapi.nmea.parser.SentenceFactory;
 import net.sf.marineapi.nmea.sentence.GGASentence;
 import net.sf.marineapi.nmea.sentence.GSASentence;
@@ -42,6 +44,9 @@ public class GlobalPositioningSystem {
 
     private boolean validString;
 
+    public enum GpsStateEvent { PROVIDER_ENABLED, PROVIDER_DISABLED }
+    public final Signal1<GpsStateEvent> gpsStateEvent = new Signal1<>();
+
     public GlobalPositioningSystem(LocationManager locationManager) {
         Log.d(TAG, "GlobalPositioningSystem() Constructor");
         this.locationManager = locationManager;
@@ -65,11 +70,13 @@ public class GlobalPositioningSystem {
                 @Override
                 public void onProviderEnabled(String provider) {
                     Log.d(TAG, "onProviderEnabled()");
+                    gpsStateEvent.fire(GpsStateEvent.PROVIDER_ENABLED);
                 }
 
                 @Override
                 public void onProviderDisabled(String provider) {
                     Log.d(TAG, "onProviderDisabled()");
+                    gpsStateEvent.fire(GpsStateEvent.PROVIDER_DISABLED);
                 }
             };
 
