@@ -90,18 +90,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createButtonListeners() {
-        gpsOnButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                gpsOn();
-            }
+        gpsOnButton.setOnClickListener(view -> {
+            gpsOn();
         });
 
-        gpsOffButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                gpsOff();
-            }
+        gpsOffButton.setOnClickListener(view -> {
+            gpsOff();
         });
     }
 
