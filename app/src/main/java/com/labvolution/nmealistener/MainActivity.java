@@ -35,7 +35,6 @@ public class MainActivity extends AppCompatActivity {
 
     int previousSatelliteCount = -1;
     int currentSatelliteCount;
-    boolean gpsSettingsState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +79,12 @@ public class MainActivity extends AppCompatActivity {
     private void startGpsMonitor() {
         gps = new GlobalPositioningSystem(locationManager);
         gps.registerGpsListeners();
-        gpsOn();
+        if (gpsSettingsState()) {
+            getHandler().post(getLocationUpdate);
+            previousSatelliteCount = -1;
+        } else {
+            gpsOn();
+        }
     }
 
     private void createButtonListeners() {
@@ -102,10 +106,8 @@ public class MainActivity extends AppCompatActivity {
     private void gpsOn(){
         Log.d(TAG, "gpsOn()");
         try {
-            gpsSettingsState = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-            if (gpsSettingsState) { return; }
+            if (gpsSettingsState()) { return; }
 
-            Log.d(TAG, "isProviderEnabled(): " + Boolean.toString(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)));
             // XXX: https://stackoverflow.com/a/29232367
             startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
             getHandler().post(getLocationUpdate);
@@ -118,8 +120,7 @@ public class MainActivity extends AppCompatActivity {
     private void gpsOff() {
         Log.d(TAG, "gpsOff()");
         try {
-            gpsSettingsState = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-            if (!gpsSettingsState) { return; }
+            if (!gpsSettingsState()) { return; }
 
             startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
             getHandler().removeCallbacks(getLocationUpdate);
@@ -128,6 +129,11 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception ex) {
             Log.e(TAG, "Error in gpsOff(): " + ex.getStackTrace());
         }
+    }
+
+    private boolean gpsSettingsState() {
+        Log.d(TAG, "isProviderEnabled(): " + Boolean.toString(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)));
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
     private void getLocationUpdate() {
